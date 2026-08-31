@@ -35,7 +35,7 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 | Sous 16 reecritures generiques du shell, une a la fois | 2,2 % en moyenne | 0,26 % |
 | Sous 348 compositions de deux a trois reecritures | 2,6 % en moyenne | 0,26 % |
 | Meilleure des 4 representations aveugles neuves, sur un controle de 960 commandes | | **45,1 %** du travail legitime fait avec un outil inhabituel |
-| **Notre propre plancher**, sur les formes structurellement riches du meme controle | | **26,9 %** |
+| **Notre propre plancher**, sur ce meme controle | | **16,1 %**, dont la moitie due a la longueur des commandes et non a l'outil |
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
@@ -206,26 +206,32 @@ L'angle de la **rarete** monte a 60,4 % contre 36,7 pour le socle. Et le control
 
 Un dernier controle, dont le resultat est **indecis** et que nous donnons quand meme : le socle augmente de 484 colonnes toujours nulles, donc strictement la meme information avec la largeur d'une union, gagne 3,9 points, et le socle repete dix fois en gagne 2,1. Mais le test apparie ne les etablit pas. On ne peut ni affirmer que la largeur paie toute seule, ni l'exclure. C'est un des auteurs qui a signale ce risque en auditant son propre travail.
 
-### 9. Nous avons durci notre propre controle. Notre plancher refuse plus d'une commande legitime sur quatre
+### 9. Notre plancher refusait le travail ordinaire. Ce n'etait pas l'outil inhabituel, c'est que notre corpus est coupe a 80 caracteres
 
 Le point precedent remplacait un controle de dix-huit commandes ecrites a la main par 480 produites par une commande. Restait une faiblesse que nous nous etions notee : **ces 480 commandes etaient structurellement pauvres**. Consulter une version, lire une aide, traiter un fichier. Une representation n'a presque rien a y voir.
 
 Durci avec huit formes de plus, tout aussi ordinaires mais riches en structure : boucle sur des fichiers, tuyau vers un tri, sous-shell, deux redirections separees, descente recursive dans un projet, variable d'environnement. Exactement les constructions que ces representations encodent. **960 commandes**, aucune batterie ouverte, fichier regenerable a l'empreinte identique, deux passes rendant le meme resultat au dernier octet.
 
-| | detection | formes pauvres | 16 formes | **formes riches seules** |
+Resultat : le socle en refuse **16,1 %**, la « rarete » **45,1 %**. La conclusion etait ecrite : *le juge refuse le travail fait avec un outil qu'il ne connait pas*.
+
+**Sauf qu'avant de la publier, nous sommes alles voir ce que contient le corpus d'apprentissage. Il est coupe a quatre-vingts caracteres.** Longueur maximale 80, mediane 80, 64 % des lignes exactement au plafond, **zero commande au-dela de cent**. Or les formes riches du controle font 90 a 100 caracteres. Le modele n'avait jamais vu une commande de cette longueur, avec un outil familier ou non.
+
+**Le controle symetrique qui tranche** : les memes seize formes, gabarits verifies identiques, avec les soixante outils que cet operateur emploie le plus. Si le refus venait de l'outil, il devait s'effondrer.
+
+| | detection | outils etrangers | **memes formes, outils FAMILIERS** | effet outil |
 |---|---|---|---|---|
-| socle aveugle | 36,7 % | 5,3 % | 16,1 % | **26,9 %** |
-| « intensite » | 47,1 % | 0,5 % | 4,5 % | **8,5 %** |
-| socle + 484 colonnes nulles | 40,6 % | 9,3 % | 20,4 % | 31,5 % |
-| « rarete » | 60,4 % | 31,7 % | 45,1 % | **58,5 %** |
+| socle aveugle | 36,7 % | 16,1 % | **7,8 %** | +8,3 |
+| « intensite » | 47,1 % | 4,5 % | 7,3 % | **-2,8** |
+| socle + 484 colonnes nulles | 40,6 % | 20,4 % | 9,9 % | +10,5 |
+| « rarete » | 60,4 % | 45,1 % | **26,0 %** | +19,1 |
 
-**Le fait porte sur notre propre plancher.** Le socle aveugle, que nous publions a 36,7 % depuis trois billets, refuse **26,9 %** des commandes structurees. Plus d'une sur quatre. Ce n'est pas un defaut des representations neuves, c'est un defaut du plancher, invisible tant que le controle tenait en dix-huit invocations triviales. Nous mesurions la detection avec soin et pas ce que le juge refusait a cote.
+**Il ne s'effondre pas : la moitie de ce que nous allions attribuer a l'outil vient de la forme.** Notre juge refuse du travail parfaitement ordinaire simplement parce qu'il est plus long et plus structure que tout ce que son corpus contient.
 
-La « rarete » passe a **58,5 %**, presque trois commandes legitimes sur cinq : le durcissement ne change pas la conclusion precedente, il en triple l'amplitude. Seul point encourageant, « intensite » tient a **8,5 %**, trois fois mieux que le plancher, tout en gagnant dix points de detection : la seule representation qui ameliore les deux chiffres a la fois, sur le controle le plus dur que nous ayons su construire.
+**Et ce n'est pas un defaut a reparer, ce qui est le plus interessant.** La coupure est **deliberee** : ce journal n'a jamais ete un jeu de donnees, c'est un resume d'activite ecrit court expres, et d'autres programmes le lisent pour d'autres usages. L'allonger pour arranger notre mesure casserait leur travail. La bonne conclusion n'est donc pas un correctif mais une limite ecrite noir sur blanc : **notre juge apprend sur un corpus constitue pour autre chose**, il ne peut rien savoir des commandes longues, et tous nos taux de refus se lisent avec cette borne.
 
-**Et la question de la largeur, laissee ouverte au point precedent, est tranchee avec le signe inverse.** Le socle augmente de 484 colonnes toujours nulles, donc strictement la meme information, refuse **31,5 %** contre 26,9 au socle nu. Elargir une representation sans rien lui apprendre lui fait refuser **davantage** de travail legitime. La largeur n'est pas un avantage gratuit, c'est un cout.
+**Ce qui survit intact** : la « rarete » reste de tres loin la pire, 26 % de refus meme sur des outils familiers et dix-neuf points de plus des que l'outil change, elle detecte bien la nouveaute. Et **« intensite » refuse MOINS sur les outils etrangers que sur les familiers** : aucun biais de nouveaute, avec dix points de detection gagnes. Seul resultat positif de la journee. **La largeur, elle, est un cout** : le socle plus 484 colonnes toujours nulles refuse 20,4 % contre 16,1 au socle nu.
 
-**La regle qui en sort : un controle trop facile ne dit pas seulement moins, il dit faux.** A dix-huit commandes il classait a l'envers. A 480 commandes pauvres il classait juste mais annoncait un plancher propre a 5 %. A 960 commandes realistes, le meme plancher en refuse 27. Le chiffre depend de la difficulte du controle, **donc on publie la difficulte avec le chiffre**.
+**La regle qui en sort : un controle trop facile ne dit pas seulement moins, il dit faux.** A dix-huit commandes il classait a l'envers. A 480 commandes pauvres il annoncait un plancher propre a 5 %. A 960 realistes il en montre 16, et le controle symetrique montre que la moitie de ces 16 ne parle pas de ce qu'on croyait. Chaque fois, la reponse a ete de rendre la mesure plus dure et de regarder ce qui restait.
 
 ## Ce que ces corrections nous apprennent
 
