@@ -37,9 +37,9 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
-## Trois corrections qui valent mieux que les resultats
+## Les corrections valent mieux que les resultats
 
-Un projet de recherche honnete se juge moins a ses reussites qu'a ce qu'il publie quand il se trompe. Voici les trois dernieres, dans l'ordre ou elles font mal.
+Un projet de recherche honnete se juge moins a ses reussites qu'a ce qu'il publie quand il se trompe. Voici les dernieres, dans l'ordre ou elles font mal.
 
 ### 1. Notre plancher deterministe refusait le vrai travail
 
@@ -57,7 +57,7 @@ Ferme par analyse en fenetres glissantes, verifie sur 30 cas. La lecon depasse c
 
 Le meme audit a tue notre resultat le plus prometteur, jamais publie : un juge qui detectait 89,8 % des attaques sans en avoir jamais vu une. Rejoue sur cinq graines, il ne battait son propre controle que sur la seule graine figee dans le script ; son taux de fausses alertes etait une tautologie de seuil ; et trois autres mesures tombaient parce que l'etiquette apprise etait un OU logique de deux de ses dix entrees.
 
-### 3. Sans la connaissance des attaques, le juge tombe de 86 % a 32 %
+### 3. Sans la connaissance des attaques, le juge tombe de 86 % a 37 %
 
 Le point precedent posait une question qu'on ne pouvait plus eviter : notre representation d'entree avait ete **ecrite en regardant les attaques**. Plusieurs de ses primitives etaient, mot pour mot, des fragments de nos propres exemples malveillants. « Il n'a jamais vu une attaque » etait vrai des poids et faux du systeme.
 
@@ -68,10 +68,10 @@ Au meme point de fonctionnement, un pour cent de fausses alertes sur du trafic r
 | Representation | Detection | Fausses alertes |
 |---|---|---|
 | Ecrite en regardant les attaques | 85,7 % | 1,1 % |
-| Aveugle aux attaques | **32,0 %** | 0,8 % |
+| Aveugle aux attaques | **~37 %** (ecart-type 6) | 1,2 % |
 | Comptage sans parametre appris, meme representation aveugle | 16,3 % | |
 
-**Cinquante-trois points d'ecart.** Pres des deux tiers de ce que nous appelions detection venait d'avoir lu les reponses.
+**Pres de cinquante points d'ecart.** Pres des deux tiers de ce que nous appelions detection venait d'avoir lu les reponses. (Le chiffre de la representation aveugle a d'abord ete publie a 32,0 %, puis corrige deux fois : voir les points 6 et 7, ou nous avons decouvert que notre banc ne mesurait pas ce que nous croyions.)
 
 Deux controles restent bons : zero fausse alerte sur dix-huit commandes legitimes employant des outils que l'operateur n'a jamais utilises, donc ce n'est pas un detecteur d'habitudes ; et le contournement par prefixe long est impossible par construction, puisque plus rien n'est tronque.
 
@@ -145,13 +145,43 @@ chemin n'y change rien tant que les autres existent. Seule l'elimination d'une C
 deplace, comme l'a fait le fenetrage unifie. Viser une moyenne ou viser un maximum ne sont pas la
 meme decision d'ingenierie, et il faut savoir laquelle on vise avant d'ecrire le correctif.
 
+### 6. Nous avons publie un point la ou notre banc rendait un intervalle de vingt
+
+Le point precedent posait « 32 % » comme le chiffre a battre. Avant de chercher a le battre, nous avons mesure une chose que nous n'avions jamais mesuree : **le bruit du banc lui-meme**. Meme representation, meme protocole, meme code, dix tirages differents de l'initialisation et du decoupage.
+
+```
+24,5   28,6   34,7   36,7   36,7   38,8   38,8   40,8   40,8   44,9
+```
+
+**Ecart-type six points, etendue vingt.** Le 32 % publie etait la moyenne de trois graines qui se trouvaient etre basses.
+
+La consequence compte plus que la correction : **sur ce banc, un ecart de moins de douze points entre deux methodes n'est pas une amelioration, c'est du bruit de tirage.** Toute conclusion tiree d'un gain de trois ou cinq points aurait ete du bruit lu comme un progres. Pourquoi c'est si bruyant, et c'etait previsible : quarante-neuf attaques font qu'une seule attaque vaut deux points, et l'initialisation deplace le seuil de decision.
+
+Ce qui tient malgre tout : l'ecart entre la representation ecrite en regardant les attaques et la representation aveugle fait pres de cinquante points. A six points d'ecart-type, cinquante points restent cinquante points. **La conclusion du point 3 est intacte, c'est sa precision qui etait fausse.**
+
+Nous avions passe la journee a reprocher a nos manches anterieures de publier des points sans intervalle de confiance, et nous avions fait exactement pareil deux heures plus tot.
+
+### 7. Cinq fois la meme commande, cinq resultats : le banc apprenait sur le journal de nos propres mesures
+
+Avant de se servir des dix graines du point precedent, verification qu'elles suffisaient : **cinq lancements de la meme commande, memes graines, meme code.** Resultats `38,2 / 35,9 / 36,7 / 34,7 / 39,2`. **Les graines ne fixaient rien**, et nous ne l'avions jamais vu parce que nous n'avions jamais lance deux fois la meme chose.
+
+**Premiere hypothese, fausse, et c'est la moitie du travail.** Le non-determinisme des noyaux de calcul sur carte graphique. Correctif pose dans les regles de l'art, y compris le piege classique : la variable d'environnement qui impose le mode reproductible doit etre posee **avant** le chargement de la bibliotheque, sinon le contexte est deja cree et elle est ignoree sans le moindre message. Plus le mode qui **leve une erreur** quand un noyau non reproductible est appele, au lieu de le laisser tirer au sort en silence. Trois nouveaux lancements : `36,5 / 35,3 / 36,5`. Toujours pas fixe. Le correctif etait bon, la cause etait ailleurs, et c'est pour cela qu'on verifie une hypothese au lieu de se contenter de la corriger.
+
+**La vraie cause.** Le banc apprend le comportement normal sur du trafic reel, lu dans un journal d'activite. Ce journal est **vivant** : six lignes de plus toutes les vingt secondes, et ces lignes sont **nos propres commandes de mesure**. Le corpus d'entrainement grossissait sous le banc, alimente par l'acte meme de mesurer. Nous avions cherche le bruit dans le modele, dans les graines, dans le materiel ; **il etait dans les donnees, et il venait de nous**.
+
+Parade : le corpus est **gele**, et son empreinte est inscrite dans le code du banc et dans chaque resultat. Preuve : **trois lancements de la meme commande rendent des fichiers de resultats identiques a l'empreinte, au dernier octet.** Plancher rejouable : 36,7 %.
+
+Deux defauts d'instrument de la meme famille sont tombes dans la foulee. **Notre controle d'aveuglement ne suivait pas les imports** : un module qui se contente d'assembler plusieurs representations affichait le meilleur score du tableau, zero mot suspect, parce que son fichier ne contient que de la tuyauterie et pas une seule regle. Un controle qui ne suit pas les imports declare propre exactement ce qu'il n'a pas regarde. Et en mesurant quatre representations neuves, nous nous sommes apercus que **leurs fichiers changeaient entre deux lancements** parce que leurs auteurs les corrigeaient encore : une meme representation est passee de 96 a 129 puis a 65 composantes pendant nos mesures.
+
+**La regle qui sort de la journee : tout ce qui entre dans une mesure doit etre fige et empreinte, les donnees, le code mesure et le code qui mesure. Ce qui bouge pendant qu'on l'observe n'est pas mesure, il est apercu.**
+
 ## Ce que ces corrections nous apprennent
 
 Regardez ce que la representation honnete rate : un telechargement suivi d'une execution, une ligne ajoutee a un fichier de configuration, une tache planifiee. Ce sont des gestes qu'un operateur fait tous les jours. Au niveau de ce que l'action **fait**, quelle capacite, dans quelle zone, avec quelle structure, une attaque et du travail legitime sont souvent le meme objet.
 
 La conclusion est negative et elle est utile : **la forme d'une action ne suffit pas a la juger.** Il manque ce que l'action etait censee accomplir, et cette information ne peut pas etre tiree du texte de la commande, par aucun modele, si petit ou si grand soit-il. Elle doit etre **declaree par l'agent avant qu'il agisse**. C'est la troisieme couche que la these appelait depuis le debut, et c'est la premiere fois que nous avons un chiffre qui montre pourquoi elle est necessaire plutot qu'elegante.
 
-32 %, c'est desormais notre plancher honnete. Tout ce qui montera au-dessus devra le faire sans avoir lu les reponses.
+**37 %, c'est desormais notre plancher honnete, et il est rejouable a l'octet pres.** Tout ce qui montera au-dessus devra le faire sans avoir lu les reponses, et depasser de plus de douze points le bruit propre du banc.
 
 ## La methode
 
@@ -160,6 +190,7 @@ La conclusion est negative et elle est utile : **la forme d'une action ne suffit
 - **Co-evolution a trois roles.** Un proposeur, un solveur, un verificateur, separes. Notre verificateur est exact : le juge lui-meme.
 - **Mode ombre avant tout pouvoir.** Le juge a d'abord juge des milliers de vraies commandes sans aucun pouvoir. C'est la qu'on a attrape un sur-blocage de 74 % du travail legitime, corrige avant tout deploiement.
 - **Journal infalsifiable.** Chaque verdict est scelle dans un journal en ajout seul ou chaque empreinte enchaine la precedente : falsifier une decision passee casse toute la chaine, et la fraude est detectee au rejeu.
+- **Rien ne bouge pendant qu'on mesure.** Les donnees, le code mesure et le code qui mesure sont figes et empreintes avant chaque campagne, et deux lancements identiques doivent rendre le meme fichier a l'octet pres. Notre banc a longtemps appris sur un journal vivant alimente par nos propres commandes de mesure.
 - **Audit adversarial avant publication, pas apres.** Nos six dernieres manches ont ete attaquees par des auditeurs independants avant d'etre publiees. Elles n'ont pas survecu. C'est le meilleur usage que nous ayons fait d'une journee.
 
 ## Le chemin
