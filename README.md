@@ -35,7 +35,7 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 | Sous 16 reecritures generiques du shell, une a la fois | 2,2 % en moyenne | 0,26 % |
 | Sous 348 compositions de deux a trois reecritures | 2,6 % en moyenne | 0,26 % |
 | Meilleure des 4 representations aveugles neuves, sur un controle de 960 commandes | | **45,1 %** du travail legitime fait avec un outil inhabituel |
-| **Notre propre plancher**, sur ce meme controle | | **16,1 %**, dont la moitie due a la longueur des commandes et non a l'outil |
+| **Notre propre plancher**, sur ce meme controle | | **16,1 %**, dont la moitie due a la forme de la commande et non a l'outil |
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
@@ -225,7 +225,25 @@ Resultat : le socle en refuse **16,1 %**, la « rarete » **45,1 %**. La conclus
 | socle + 484 colonnes nulles | 40,6 % | 20,4 % | 9,9 % | +10,5 |
 | « rarete » | 60,4 % | 45,1 % | **26,0 %** | +19,1 |
 
-**Il ne s'effondre pas : la moitie de ce que nous allions attribuer a l'outil vient de la forme.** Notre juge refuse du travail parfaitement ordinaire simplement parce qu'il est plus long et plus structure que tout ce que son corpus contient.
+**Il ne s'effondre pas : la moitie de ce que nous allions attribuer a l'outil vient de la forme.**
+
+**Nous avons alors ecrit que c'etait la LONGUEUR, et nous l'avons publie sans le mesurer. C'etait faux.** Mesure depuis, par tranche de longueur et sur outils familiers seuls : le refus vaut 0,8 % sous quarante caracteres, culmine a **25,5 % entre soixante et quatre-vingts** (donc **sous** le plafond du corpus) et **retombe a 2,3 % au-dela de quatre-vingts**. Les deux formes les plus longues du controle, 84 et 82 caracteres, sont parmi les plus propres.
+
+**Ce que c'est vraiment : trois constructions.**
+
+| forme | longueur | refus du socle |
+|---|---|---|
+| `X --list \| grep -v obsolete \| sort > index.txt` | 61 | **45,0 %** |
+| `for f in *.txt; do X "$f"; done` | 46 | **29,0 %** |
+| `X --config "$HOME/.config/outil.conf" run` | 43 | **18,1 %** |
+| `X --input ... --output ... && echo termine` | 84 | 0,3 % |
+| `X export --format json > ... 2>...` | 82 | 4,3 % |
+
+Toutes les autres formes sont sous dix pour cent, et ce sont **les memes trois constructions chez les deux representations testees**, ce qui situe le defaut dans le corpus et non dans la representation.
+
+**L'explication evidente etait que ces tournures sont rares dans le corpus. Nous l'avons mesuree avant de l'ecrire, cette fois, et elle ne tient pas non plus.** Les trois formes propres sont bien les plus courantes (l'enchainement par ET logique est dans 28,8 % des commandes du corpus pour 0,3 % de refus ; la redirection simple, 24,1 % pour 4,3 % ; le tuyau unique, 10,6 % pour 0,9 %). Mais le contre-exemple est net : **`xargs` n'apparait qu'une seule fois dans les 9 479 commandes du corpus**, c'est de tres loin la construction la plus rare, et sa forme n'est refusee qu'a 7,1 %. Le sous-shell, 0,17 % du corpus, n'est refuse qu'a 9,7 %. La correlation entre rarete et refus vaut **-0,20** : autant dire rien.
+
+**Nous avons donc le quoi et pas le pourquoi, et nous l'ecrivons ainsi.** Trois formes precises font tout le refus, elles ne sont pas les plus rares, et nous ne savons pas encore ce qu'elles ont en commun.
 
 **Et ce n'est pas un defaut a reparer, ce qui est le plus interessant.** La coupure est **deliberee** : ce journal n'a jamais ete un jeu de donnees, c'est un resume d'activite ecrit court expres, et d'autres programmes le lisent pour d'autres usages. L'allonger pour arranger notre mesure casserait leur travail. La bonne conclusion n'est donc pas un correctif mais une limite ecrite noir sur blanc : **notre juge apprend sur un corpus constitue pour autre chose**, il ne peut rien savoir des commandes longues, et tous nos taux de refus se lisent avec cette borne.
 
