@@ -34,7 +34,8 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 | Plancher corrige, mesure sur 5 928 commandes reellement executees | 2 % | **0,26 %** |
 | Sous 16 reecritures generiques du shell, une a la fois | 2,2 % en moyenne | 0,26 % |
 | Sous 348 compositions de deux a trois reecritures | 2,6 % en moyenne | 0,26 % |
-| Meilleure des 4 representations aveugles neuves, sur un controle de 480 commandes | | **31,7 %** du travail legitime fait avec un outil inhabituel |
+| Meilleure des 4 representations aveugles neuves, sur un controle de 960 commandes | | **45,1 %** du travail legitime fait avec un outil inhabituel |
+| **Notre propre plancher**, sur les formes structurellement riches du meme controle | | **26,9 %** |
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
@@ -204,6 +205,27 @@ L'angle de la **rarete** monte a 60,4 % contre 36,7 pour le socle. Et le control
 **Le plancher publie reste 36,7 %** : dix points ne tranchent pas la question de fond.
 
 Un dernier controle, dont le resultat est **indecis** et que nous donnons quand meme : le socle augmente de 484 colonnes toujours nulles, donc strictement la meme information avec la largeur d'une union, gagne 3,9 points, et le socle repete dix fois en gagne 2,1. Mais le test apparie ne les etablit pas. On ne peut ni affirmer que la largeur paie toute seule, ni l'exclure. C'est un des auteurs qui a signale ce risque en auditant son propre travail.
+
+### 9. Nous avons durci notre propre controle. Notre plancher refuse plus d'une commande legitime sur quatre
+
+Le point precedent remplacait un controle de dix-huit commandes ecrites a la main par 480 produites par une commande. Restait une faiblesse que nous nous etions notee : **ces 480 commandes etaient structurellement pauvres**. Consulter une version, lire une aide, traiter un fichier. Une representation n'a presque rien a y voir.
+
+Durci avec huit formes de plus, tout aussi ordinaires mais riches en structure : boucle sur des fichiers, tuyau vers un tri, sous-shell, deux redirections separees, descente recursive dans un projet, variable d'environnement. Exactement les constructions que ces representations encodent. **960 commandes**, aucune batterie ouverte, fichier regenerable a l'empreinte identique, deux passes rendant le meme resultat au dernier octet.
+
+| | detection | formes pauvres | 16 formes | **formes riches seules** |
+|---|---|---|---|---|
+| socle aveugle | 36,7 % | 5,3 % | 16,1 % | **26,9 %** |
+| « intensite » | 47,1 % | 0,5 % | 4,5 % | **8,5 %** |
+| socle + 484 colonnes nulles | 40,6 % | 9,3 % | 20,4 % | 31,5 % |
+| « rarete » | 60,4 % | 31,7 % | 45,1 % | **58,5 %** |
+
+**Le fait porte sur notre propre plancher.** Le socle aveugle, que nous publions a 36,7 % depuis trois billets, refuse **26,9 %** des commandes structurees. Plus d'une sur quatre. Ce n'est pas un defaut des representations neuves, c'est un defaut du plancher, invisible tant que le controle tenait en dix-huit invocations triviales. Nous mesurions la detection avec soin et pas ce que le juge refusait a cote.
+
+La « rarete » passe a **58,5 %**, presque trois commandes legitimes sur cinq : le durcissement ne change pas la conclusion precedente, il en triple l'amplitude. Seul point encourageant, « intensite » tient a **8,5 %**, trois fois mieux que le plancher, tout en gagnant dix points de detection : la seule representation qui ameliore les deux chiffres a la fois, sur le controle le plus dur que nous ayons su construire.
+
+**Et la question de la largeur, laissee ouverte au point precedent, est tranchee avec le signe inverse.** Le socle augmente de 484 colonnes toujours nulles, donc strictement la meme information, refuse **31,5 %** contre 26,9 au socle nu. Elargir une representation sans rien lui apprendre lui fait refuser **davantage** de travail legitime. La largeur n'est pas un avantage gratuit, c'est un cout.
+
+**La regle qui en sort : un controle trop facile ne dit pas seulement moins, il dit faux.** A dix-huit commandes il classait a l'envers. A 480 commandes pauvres il classait juste mais annoncait un plancher propre a 5 %. A 960 commandes realistes, le meme plancher en refuse 27. Le chiffre depend de la difficulte du controle, **donc on publie la difficulte avec le chiffre**.
 
 ## Ce que ces corrections nous apprennent
 
