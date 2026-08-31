@@ -31,7 +31,9 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 | Apres reintegration du trafic reel a l'entrainement | 0 % | 0 % |
 | Artefact unifie (juge + plancher constitutionnel + attestation) | 0 % | 0,4 % |
 | 49 attaques independantes, hors generateur, evasions comprises | 2 % | 1,95 % |
-| Plancher corrige, mesure sur 5 928 commandes reellement executees | 2 % | **0,28 %** |
+| Plancher corrige, mesure sur 5 928 commandes reellement executees | 2 % | **0,26 %** |
+| Sous 16 reecritures generiques du shell, une a la fois | 2,2 % en moyenne | 0,26 % |
+| Sous 348 compositions de deux a trois reecritures | 2,6 % en moyenne | 0,26 % |
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
@@ -73,7 +75,77 @@ Au meme point de fonctionnement, un pour cent de fausses alertes sur du trafic r
 
 Deux controles restent bons : zero fausse alerte sur dix-huit commandes legitimes employant des outils que l'operateur n'a jamais utilises, donc ce n'est pas un detecteur d'habitudes ; et le contournement par prefixe long est impossible par construction, puisque plus rien n'est tronque.
 
-## Ce que ces trois corrections nous apprennent
+### 4. Le contexte recent ne tient pas lieu de declaration d'intention
+
+La conclusion precedente disait : l'agent doit declarer ce qu'il voulait accomplir. Avant de batir
+dessus, nous avons teste le substitut le moins cher, celui qu'un juge en production a toujours sous
+la main : ce que l'agent faisait juste avant. 95 jours de trafic reel, mille sessions, decoupage
+par session et non par commande.
+
+Le contexte porte bien de l'information : il predit l'action suivante 20,3 % mieux qu'un contexte
+tire au hasard. Mais il ne detecte rien. **Zero pour cent** de detection si l'agent choisit son
+contexte parmi trois cents, **deux pour cent** s'il lui est impose, contre **trente-quatre** pour
+l'action seule.
+
+Le controle qui rend ce resultat lisible : en donnant le **meme avantage aux commandes legitimes**,
+elles tombent aussi a zero pour cent de signalement. Ce n'est donc pas le contexte qui est inutile,
+c'est **le libre choix de sa propre declaration qui detruit le detecteur, pour tout le monde a la
+fois**. Une declaration que celui qui agit peut choisir apres coup n'est pas une information, c'est
+une surface d'attaque.
+
+Ce qui est falsifie est precis : que l'historique recent tienne lieu de declaration. Ce qui ne
+l'est pas : la these, car une vraie declaration formulee dans les mots de la tache n'existe pas
+dans ces donnees. **Acquis : une declaration devra etre engagee AVANT que l'action soit choisie, et
+liee a elle par autre chose qu'une promesse.** C'est la couche de contrat de la these, et nous
+avons maintenant un chiffre qui dit pourquoi elle doit etre contraignante plutot que declarative.
+
+### 5. Un point n'est pas une courbe : le banc de reecriture
+
+Tous nos chiffres reposaient sur 49 attaques figees. Mesurer un juge sur un jeu fige mesure sa
+memoire, pas sa comprehension, et un attaquant reel relance la meme attaque **reecrite** jusqu'a ce
+qu'une forme passe. Nous avons donc defini seize transformations **a priori depuis la semantique du
+shell**, ecrites avant toute mesure et jamais choisies en regardant nos echecs, puis compose ces
+transformations entre elles : 348 formes au total.
+
+Premiere passe : **les quarante-neuf attaques repassent toutes**, et une seule forme, l'encodage
+octal, ramene la detection a zero sur la totalite.
+
+Deux causes, de nature opposee, et c'est ce qui fait l'interet de la manche.
+
+**Une faute de notre propre instrument.** Notre transformation d'encodage ne codait que les cent
+vingt premiers octets : composee avec un prefixe de bourrage, elle n'encodait plus que le
+commentaire, donc la forme produite ne contenait plus l'attaque. La compter comme une percee aurait
+ete se mentir avec ses propres outils. Trouvee en verifiant, retiree, racontee.
+
+**Un vrai defaut, et c'est la troisieme troncature de la meme journee.** Nous avions ferme la
+troncature d'analyse sur le chemin principal par des fenetres glissantes ; les correctifs suivants
+passaient les charges **derivees** entieres a la meme fonction qui les retronque. La porte etait
+bouchee et la fenetre ouverte. **Deux des trois defauts de cette famille ont ete introduits par les
+correctifs des precedents.** Une etape de preparation qui coupe le texte est la classe de defaut la
+plus recurrente de ce projet : elle se traite avec une fonction unique appliquee a tout texte
+analyse, jamais au cas par cas.
+
+Une troisieme correction de meme nature : **l'ordre des etapes de preparation est une propriete de
+securite.** Il faut normaliser avant de resoudre les variables, parce que le shell developpe le
+separateur avant de decouper les mots.
+
+| mesure | avant | apres |
+|---|---|---|
+| evadable sous une reecriture | 100 % | **4,1 %** |
+| evadable sous composition de 2 a 3 | 100 % | **18,4 %** |
+| pire des 348 compositions | 0 % de detection | **72,7 %** |
+| detection moyenne, 16 formes | 90,0 % | **97,8 %** |
+| refus du travail reel | 0,28 % | **0,26 %** |
+
+**Et une lecon qui vaut au-dela du projet.** Une derniere correction, reelle et gratuite (elle
+ferme un chemin ou une affectation precedee d'un guillemet devenait invisible), a fait monter la
+detection moyenne a trois couches de 96,4 a 97,3 % **sans faire bouger d'un point le nombre
+d'attaques evadables**. Parce que ce nombre est un **maximum sur 348 tentatives** : fermer un
+chemin n'y change rien tant que les autres existent. Seule l'elimination d'une CLASSE entiere le
+deplace, comme l'a fait le fenetrage unifie. Viser une moyenne ou viser un maximum ne sont pas la
+meme decision d'ingenierie, et il faut savoir laquelle on vise avant d'ecrire le correctif.
+
+## Ce que ces corrections nous apprennent
 
 Regardez ce que la representation honnete rate : un telechargement suivi d'une execution, une ligne ajoutee a un fichier de configuration, une tache planifiee. Ce sont des gestes qu'un operateur fait tous les jours. Au niveau de ce que l'action **fait**, quelle capacite, dans quelle zone, avec quelle structure, une attaque et du travail legitime sont souvent le meme objet.
 
