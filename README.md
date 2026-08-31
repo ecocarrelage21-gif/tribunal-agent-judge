@@ -34,6 +34,7 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 | Plancher corrige, mesure sur 5 928 commandes reellement executees | 2 % | **0,26 %** |
 | Sous 16 reecritures generiques du shell, une a la fois | 2,2 % en moyenne | 0,26 % |
 | Sous 348 compositions de deux a trois reecritures | 2,6 % en moyenne | 0,26 % |
+| Meilleure des 4 representations aveugles neuves, sur un controle de 480 commandes | | **31,7 %** du travail legitime fait avec un outil inhabituel |
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
@@ -176,6 +177,33 @@ Parade : le corpus est **gele**, et son empreinte est inscrite dans le code du b
 Deux defauts d'instrument de la meme famille sont tombes dans la foulee. **Notre controle d'aveuglement ne suivait pas les imports** : un module qui se contente d'assembler plusieurs representations affichait le meilleur score du tableau, zero mot suspect, parce que son fichier ne contient que de la tuyauterie et pas une seule regle. Un controle qui ne suit pas les imports declare propre exactement ce qu'il n'a pas regarde. Et en mesurant quatre representations neuves, nous nous sommes apercus que **leurs fichiers changeaient entre deux lancements** parce que leurs auteurs les corrigeaient encore : une meme representation est passee de 96 a 129 puis a 65 composantes pendant nos mesures.
 
 **La regle qui sort de la journee : tout ce qui entre dans une mesure doit etre fige et empreinte, les donnees, le code mesure et le code qui mesure. Ce qui bouge pendant qu'on l'observe n'est pas mesure, il est apercu.**
+
+### 8. Une representation gagnait vingt-quatre points. La porte qui la validait tenait en dix-huit commandes
+
+Nous avons fait concevoir **quatre representations d'entree par quatre auteurs independants**, tous aveugles aux attaques : interdiction d'ouvrir un fichier de batterie, interdiction de lancer le banc de detection, sources limitees au manuel du systeme, a la norme des repertoires, a la grammaire du shell et aux statistiques du seul trafic legitime. Chacune a ensuite ete auditee par un adversaire independant charge de trouver de la connaissance d'attaque contrebandee. **Les quatre sont declarees propres.** Les criteres de succes etaient ecrits et dates avant la mesure.
+
+L'angle de la **rarete** monte a 60,4 % contre 36,7 pour le socle. Et le controle qui existe precisement pour distinguer un juge d'un detecteur d'habitudes, celui des outils etrangers, affichait **2,2 % contre 3,9 %** : mieux que le socle. Il passait tous les criteres.
+
+**Sauf que ce controle tenait en dix-huit commandes ecrites a la main.** Sur dix-huit, l'ecart entre 2,2 % et 3,9 % vaut moins d'une commande. Nous l'avons refait par une commande plutot qu'a la main : soixante outils que le manuel du systeme connait et que cet operateur n'a jamais tapes une seule fois, repartis sur tout l'alphabet, et **480 invocations parfaitement ordinaires**. Aucun fichier de batterie ouvert pour les fabriquer ; le fichier se regenere a l'empreinte identique.
+
+| | detection | ecart au socle (apparie) | etrangers, 18 commandes | **etrangers, 480 commandes** |
+|---|---|---|---|---|
+| socle aveugle | 36,7 % | | 3,9 % | **5,3 %** |
+| « rarete » | 60,4 % | +23,6 (t=11,3) | 2,2 % | **31,7 %** |
+| union des quatre | 56,5 % | +19,8 (t=6,3) | 0,0 % | 19,1 % |
+| « intensite » | 47,1 % | +10,4 (t=3,5) | 21,7 % | **0,5 %** |
+| « segments » | 30,2 % | -6,5 (t=-3,7) | 0,0 % | 12,5 % |
+| « arguments » | 26,7 % | -10,0 (t=-7,7) | 0,0 % | 11,3 % |
+
+**La representation qui gagnait vingt-quatre points refuse une commande legitime sur trois**, uniquement parce que l'outil lui est inconnu. Elle ne detecte pas le danger, elle detecte la nouveaute.
+
+**Et le renversement va dans les deux sens.** L'angle « intensite » etait le pire du tableau sur les dix-huit (21,7 %) et devient le meilleur sur les 480 (0,5 %, mieux que le socle). Le petit controle ne manquait pas seulement de puissance : **il classait les deux representations a l'envers**. Sans l'agrandir, nous publiions la mauvaise comme une percee et nous jetions la bonne.
+
+**Un critere que nous avions ecrit sur la mauvaise statistique, publie tel quel.** Il exigeait douze points de gain, tires de l'ecart entre deux tirages isoles. Mais toutes les representations sont mesurees sur les memes graines et les memes decoupages : la comparaison correcte est appariee, et son erreur type est trois a quatre fois plus petite. La barre etait trop haute pour une raison qui ne tient pas. Corriger un critere apres avoir vu le resultat est ce que nous nous interdisons, alors nous donnons les deux lectures : sous le critere tel qu'ecrit, rien ne passe ; sous le test correct, « intensite » est le premier gain honnete au-dessus du plancher, modeste et **sans aucun cout** sur le controle qui compte. Deux angles sont significativement **pires** que le socle, ce qui se publie aussi.
+
+**Le plancher publie reste 36,7 %** : dix points ne tranchent pas la question de fond.
+
+Un dernier controle, dont le resultat est **indecis** et que nous donnons quand meme : le socle augmente de 484 colonnes toujours nulles, donc strictement la meme information avec la largeur d'une union, gagne 3,9 points, et le socle repete dix fois en gagne 2,1. Mais le test apparie ne les etablit pas. On ne peut ni affirmer que la largeur paie toute seule, ni l'exclure. C'est un des auteurs qui a signale ce risque en auditant son propre travail.
 
 ## Ce que ces corrections nous apprennent
 
