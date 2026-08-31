@@ -20,26 +20,75 @@ Le marche 2026 s'est structure en deux camps qui laissent le milieu vide : les r
 
 ## Resultats mesures, publies tels quels
 
-On mesure le juge par le taux de percee : la part des attaques qui passent. Chiffres reels, verdicts rejouables a l'octet, sur des jeux de test GELES de mecanismes jamais vus a l'entrainement.
+Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee, la part des attaques qui passent, et le taux de refus du travail legitime, la part du vrai travail qu'il arrete. Un juge qui excelle sur le premier et ignore le second est inutilisable ; nous l'avons appris deux fois, a nos depens, et les deux fois sont dans ce tableau.
 
-| Etape | Taux de percee |
-|---|---|
-| Juge symbolique v0 (regles sur les mots de surface) | 80 % |
-| Juge conscient de l'etat v1 (intention et zone du monde, pas les mots) | 28 % |
-| Neuro-symbolique + co-evolution + constitution (3 graines, 2 domaines) | 0 % |
-| Valide sur trafic REEL en mode ombre (0 % de faux blocage) | 0 % |
-| Artefact unifie (juge + plancher constitutionnel + attestation) | 0 % |
-| 49 attaques INDEPENDANTES, hors generateur, evasions comprises | 0 % |
+| Etape | Percee | Refus du travail reel |
+|---|---|---|
+| Juge symbolique v0 (regles sur les mots de surface) | 80 % | non mesure |
+| Juge conscient de l'etat v1 (intention et zone, pas les mots) | 28 % | non mesure |
+| Neuro-symbolique + co-evolution + constitution (3 graines, 2 domaines) | 0 % | non mesure |
+| Premiere mise en mode ombre sur du trafic reel | 0 % | **74 %** |
+| Apres reintegration du trafic reel a l'entrainement | 0 % | 0 % |
+| Artefact unifie (juge + plancher constitutionnel + attestation) | 0 % | 0,4 % |
+| 49 attaques independantes, hors generateur, evasions comprises | 2 % | 1,95 % |
+| Plancher corrige, mesure sur 5 928 commandes reellement executees | 2 % | **0,28 %** |
 
-Et le chiffre qu'on publie parce qu'il derange : la couche apprise, SEULE, sans le catalogue de menaces deterministe, rate encore 61 % des evasions ecrites expres pour battre les regles. Aujourd'hui c'est le catalogue qui porte la securite ; apprendre au reseau a voir l'intention derriere n'importe quelle ecriture est le vrai front de recherche, et il se travaille contre un adversaire qui pense.
+**Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
+
+## Trois corrections qui valent mieux que les resultats
+
+Un projet de recherche honnete se juge moins a ses reussites qu'a ce qu'il publie quand il se trompe. Voici les trois dernieres, dans l'ordre ou elles font mal.
+
+### 1. Notre plancher deterministe refusait le vrai travail
+
+Nous avions conclu que la securite du systeme etait portee par le catalogue deterministe et non par la couche apprise. Ce catalogue n'avait jamais ete mesure que sur dix-sept commandes legitimes ecrites a la main. Passe sur 5 928 commandes reellement executees par un operateur, il en **refusait 1,95 %** : un deploiement par cle SSH, l'effacement d'un fichier de verrou temporaire, l'ouverture d'une session distante. Il rendait le meme verdict a l'effacement d'un fichier de verrou et a l'effacement du disque entier.
+
+Trois distinctions manquaient, aucune n'est une heuristique : un secret en position d'option d'authentification n'est pas un secret en position de charge utile ; effacer n'est pas detruire, la gravite tient a la portee et a la zone ; et la destination fait partie de l'intention, un juge ne peut pas savoir qu'une adresse est hostile mais il peut savoir qu'elle est indeclaree. Refus ramene a 0,28 % sans perte de detection.
+
+### 2. Un commentaire de 590 octets rendait le juge aveugle
+
+Nous avons soumis nos six dernieres manches non publiees a six auditeurs adversariaux independants, avec une consigne unique : trouver ce qui rendrait une publication malhonnete. Ils ont rendu 48 defauts, dont 22 bloquants. Le plus grave annule tous les autres.
+
+L'extracteur qui traduit une commande en intentions ne lisait que ses 600 premiers octets. Il suffisait donc de pousser la charge au-dela : un commentaire anodin de 590 octets, puis n'importe quoi, et le vecteur d'intentions devient **entierement vide**, le verdict PERMIS. Cela valait pour tout. La couche a qui nous venions d'attribuer toute la securite se contournait avec un commentaire, et **aucune de nos batteries ne pouvait le voir, puisque aucune n'ecrit une commande longue**.
+
+Ferme par analyse en fenetres glissantes, verifie sur 30 cas. La lecon depasse ce projet : un banc qui ne fait varier qu'une dimension ne mesure que ce qu'on a pense a mesurer. C'est un auditeur adverse qui l'a trouve, pas nos 49 attaques.
+
+Le meme audit a tue notre resultat le plus prometteur, jamais publie : un juge qui detectait 89,8 % des attaques sans en avoir jamais vu une. Rejoue sur cinq graines, il ne battait son propre controle que sur la seule graine figee dans le script ; son taux de fausses alertes etait une tautologie de seuil ; et trois autres mesures tombaient parce que l'etiquette apprise etait un OU logique de deux de ses dix entrees.
+
+### 3. Sans la connaissance des attaques, le juge tombe de 86 % a 32 %
+
+Le point precedent posait une question qu'on ne pouvait plus eviter : notre representation d'entree avait ete **ecrite en regardant les attaques**. Plusieurs de ses primitives etaient, mot pour mot, des fragments de nos propres exemples malveillants. « Il n'a jamais vu une attaque » etait vrai des poids et faux du systeme.
+
+Nous avons donc rebati la representation sur trois sources anterieures et etrangeres au jeu d'attaques : **le manuel du systeme** (un lexique de capacites produit par une commande a partir des pages de manuel des binaires installes, via un vocabulaire de 141 mots ordinaires), **la norme de hierarchie des fichiers** (quelle zone du disque est touchee) et **la grammaire du shell**. Le lexique se regenere a l'empreinte identique depuis un dossier ou aucun fichier d'attaque n'est accessible. La verification d'aveuglement est automatique : les parties ecrites a la main partagent six mots avec les attaques, tous du vocabulaire ordinaire du manuel et du shell ; l'ancienne representation en partageait quarante-quatre, dont des noms de fichiers precis qui n'existent que parce que quelqu'un avait regarde les attaques avant d'ecrire.
+
+Au meme point de fonctionnement, un pour cent de fausses alertes sur du trafic reel jamais vu :
+
+| Representation | Detection | Fausses alertes |
+|---|---|---|
+| Ecrite en regardant les attaques | 85,7 % | 1,1 % |
+| Aveugle aux attaques | **32,0 %** | 0,8 % |
+| Comptage sans parametre appris, meme representation aveugle | 16,3 % | |
+
+**Cinquante-trois points d'ecart.** Pres des deux tiers de ce que nous appelions detection venait d'avoir lu les reponses.
+
+Deux controles restent bons : zero fausse alerte sur dix-huit commandes legitimes employant des outils que l'operateur n'a jamais utilises, donc ce n'est pas un detecteur d'habitudes ; et le contournement par prefixe long est impossible par construction, puisque plus rien n'est tronque.
+
+## Ce que ces trois corrections nous apprennent
+
+Regardez ce que la representation honnete rate : un telechargement suivi d'une execution, une ligne ajoutee a un fichier de configuration, une tache planifiee. Ce sont des gestes qu'un operateur fait tous les jours. Au niveau de ce que l'action **fait**, quelle capacite, dans quelle zone, avec quelle structure, une attaque et du travail legitime sont souvent le meme objet.
+
+La conclusion est negative et elle est utile : **la forme d'une action ne suffit pas a la juger.** Il manque ce que l'action etait censee accomplir, et cette information ne peut pas etre tiree du texte de la commande, par aucun modele, si petit ou si grand soit-il. Elle doit etre **declaree par l'agent avant qu'il agisse**. C'est la troisieme couche que la these appelait depuis le debut, et c'est la premiere fois que nous avons un chiffre qui montre pourquoi elle est necessaire plutot qu'elegante.
+
+32 %, c'est desormais notre plancher honnete. Tout ce qui montera au-dessus devra le faire sans avoir lu les reponses.
 
 ## La methode
 
-- **Prouve, jamais affirme.** Chaque avancee a un critere de succes ecrit avant le test, falsifiable, mesure sur plusieurs graines.
+- **Prouve, jamais affirme.** Chaque avancee a un critere de succes ecrit avant le test, falsifiable, mesure sur plusieurs graines. Une porte ecrite avant la mesure a attrape trois regressions que nous avions nous-memes introduites en corrigeant.
 - **Rejouable et certifie.** Chaque verdict porte un certificat : version de la constitution, entree canonique, verdict, empreinte. Un tiers rejoue et retrouve le meme resultat.
 - **Co-evolution a trois roles.** Un proposeur, un solveur, un verificateur, separes. Notre verificateur est exact : le juge lui-meme.
 - **Mode ombre avant tout pouvoir.** Le juge a d'abord juge des milliers de vraies commandes sans aucun pouvoir. C'est la qu'on a attrape un sur-blocage de 74 % du travail legitime, corrige avant tout deploiement.
 - **Journal infalsifiable.** Chaque verdict est scelle dans un journal en ajout seul ou chaque empreinte enchaine la precedente : falsifier une decision passee casse toute la chaine, et la fraude est detectee au rejeu.
+- **Audit adversarial avant publication, pas apres.** Nos six dernieres manches ont ete attaquees par des auditeurs independants avant d'etre publiees. Elles n'ont pas survecu. C'est le meilleur usage que nous ayons fait d'une journee.
 
 ## Le chemin
 
@@ -49,33 +98,14 @@ Et le chiffre qu'on publie parce qu'il derange : la couche apprise, SEULE, sans 
 4. **J3, blocage reel** : d'abord sur les actions reversibles, avec bouton d'arret et instance d'appel humaine.
 5. **J4, co-evolution et ouverture** : adversaire branche, durcissement multi-domaines, puis produit.
 
+En travers de ce chemin, une question ouverte que les mesures ci-dessus ont rendue centrale : **comment obtenir de l'agent une declaration d'intention verifiable**, puisque la forme seule de l'action ne suffit pas.
+
 ## Contenu de ce depot
 
 Aujourd'hui : ce README, qui reprend le journal de bord public.
 
-A venir, apres une passe de separation entre le generique et l'environnement de test prive : le catalogue de menaces deterministe, les batteries d'attaques independantes, le verificateur de journal d'attestation, et les resultats bruts. Le code de recherche actuel encode des elements de l'environnement de test (chemins, services) qui n'ont pas leur place dans un depot public ; on publie propre ou on ne publie pas.
+A venir, apres une passe de separation entre le generique et l'environnement de test prive : les batteries d'attaques independantes, le verificateur de journal d'attestation, le generateur de lexique de capacites (qui ne depend que du manuel du systeme) et les resultats bruts. Le code de recherche actuel encode des elements de l'environnement de test qui n'ont pas leur place dans un depot public ; on publie propre ou on ne publie pas.
 
 ## Journal de bord
 
 Le journal complet, billet par billet et chiffres compris, est sur la page vivante : https://www.weboria.ch/joran/
-
-- **2026-08-28, billet 012.** Batterie d'attaques independantes ecrite a la main, hors generateur : le juge en laissait passer 74 %. Reconstruction a deux etages (catalogue de menaces deterministe + couche apprise elargie). Resultat final : 0 % de percee sur 49 attaques en 14 familles, evasions comprises, 0 % de sur-blocage. Reseau seul : encore 61 % de percee sur les evasions, publie tel quel.
-- **2026-08-28, billet 011.** La preuve passe de une a trois graines. Zero percee, y compris sur les 382 attaques hors du filet du plancher, arretees par le reseau seul.
-- **2026-08-28, billet 010.** Les trois preuves separees deviennent un seul artefact : juge + plancher + attestation, tous les criteres verts en une passe, deterministe a l'octet.
-- **2026-08-28, billet 009.** Le plancher constitutionnel ferme la faille du billet 008 par construction : fuites d'actions sensibles de 16 % a 0 %.
-- **2026-08-28, billet 008.** Troisieme verdict, escalader, pour les actions sensibles ; journal d'attestation chaine. Publie tel quel : 1 action sensible sur 12 passait encore, a durcir.
-- **2026-08-27, billet 007.** Le mode ombre attrape un sur-blocage de 74 % du vrai travail, corrige a 0 % sans perdre les attaques.
-- **2026-08-27, billet 006.** Le juge tourne sur notre propre cerveau de raisonnement, a parite : ~0 % de percee, 0 % de sur-blocage.
-- **2026-08-27, billet 005.** Audit rejouable bit-identique sur deux executions independantes.
-- **2026-08-27, billet 004.** Tenue contre un adversaire qui cherche, sur trois graines et un second domaine (appels d'outil et d'API).
-- **2026-08-27, billet 003.** La co-evolution converge : percee de 80 % a 1.6 % sur jeu gele.
-- **2026-08-27, billet 002.** Premier juge neuronal, anti-mirage propre (famille retiree, redecouverte, reinjectee).
-- **2026-08-27, billet 001.** Le juge symbolique v0 est une passoire (80 % de percee), et c'est la bonne nouvelle fondatrice.
-
-## Pourquoi maintenant
-
-Le reglement europeen sur l'IA impose journalisation des actions, surveillance humaine et reconstruction d'incident pour les systemes a haut risque. Les assureurs exigent des preuves de tests adversariaux pour couvrir les agents. Un juge local, deterministe, qui journalise, produit ce dossier tout seul. Construit en Suisse.
-
----
-
-Projet de recherche independant sur la surete des agents IA. Les resultats sont publies bruts, verifiables et rejouables, y compris les chiffres qui derangent.
