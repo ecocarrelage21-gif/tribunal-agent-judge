@@ -37,6 +37,8 @@ Un juge se mesure par **deux** chiffres, et il faut les deux : le taux de percee
 
 **Les taux de percee de ce tableau sont fragiles et nous le disons.** Ils reposent sur 49 attaques. Un « 0 % » sur 49 essais a une borne haute de 7,3 % a 95 % de confiance, et le 2 % actuel (48 sur 49) vaut [89,3 ; 99,6] en detection. Aucun de ces chiffres n'autorise la phrase « il bloque tout ». Il faut une batterie d'un autre ordre de grandeur, ecrite par une main adverse.
 
+**Et une seconde reserve, decouverte apres coup, qui porte sur tout ce tableau.** Jusqu'au 31 aout, notre banc apprenait le comportement normal sur un journal d'activite **vivant**, qui grossissait pendant la mesure. Les taux ci-dessus n'etaient donc pas rejouables a l'identique, ni par un tiers ni par nous. Le corpus est desormais gele et empreinte, et deux lancements identiques rendent le meme fichier a l'octet pres ; le detail est au point 7.
+
 ## Les corrections valent mieux que les resultats
 
 Un projet de recherche honnete se juge moins a ses reussites qu'a ce qu'il publie quand il se trompe. Voici les dernieres, dans l'ordre ou elles font mal.
