@@ -220,12 +220,14 @@ Resultat : le socle en refuse **16,1 %**, la « rarete » **45,1 %**. La conclus
 
 | | detection | outils etrangers | **memes formes, outils FAMILIERS** | effet outil |
 |---|---|---|---|---|
-| socle aveugle | 36,7 % | 16,1 % | **7,8 %** | +8,3 |
+| socle aveugle | 36,7 % | 16,1 % | **7,8 %** (6,9 % hors outils ambigus, voir la note) | +8,3 (+9,2) |
 | « intensite » | 47,1 % | 4,5 % | 7,3 % | **-2,8** |
 | socle + 484 colonnes nulles | 40,6 % | 20,4 % | 9,9 % | +10,5 |
 | « rarete » | 60,4 % | 45,1 % | **26,0 %** | +19,1 |
 
 **Il ne s'effondre pas : la moitie de ce que nous allions attribuer a l'outil vient de la forme.**
+
+**Note du 1er septembre, une correction qui va contre nous.** En preparant la manche suivante nous avons relu ce controle : ses gabarits ont ete remplis avec les outils les plus employes par l'operateur, et **onze de ces outils agissent** (effacer, tuer un processus, changer des droits, copier a distance, planifier). Une boucle qui efface des fichiers y etait donc comptee comme du travail legitime. Un juge qui l'escalade n'a pas tort, et la compter comme fausse alerte punit le bon comportement. Mesure : ces commandes font **19 % du controle** (176 sur 928) et le socle les refuse a **11,6 %**, contre **6,9 %** pour les 752 autres. Le chiffre honnete du socle est donc 6,9 %, l'effet outil passe de 8 a 9 points et l'effet forme de 8 a 7 : la conclusion tient. Les autres lignes du tableau n'ont pas ete re-mesurees sur ce sous-ensemble. Meme famille de defaut que la liste ecrite a la main : cette fois la liste etait generee, et sa semantique n'avait pas ete verifiee.
 
 **Nous avons alors ecrit que c'etait la LONGUEUR, et nous l'avons publie sans le mesurer. C'etait faux.** Mesure depuis, par tranche de longueur et sur outils familiers seuls : le refus vaut 0,8 % sous quarante caracteres, culmine a **25,5 % entre soixante et quatre-vingts** (donc **sous** le plafond du corpus) et **retombe a 2,3 % au-dela de quatre-vingts**. Les deux formes les plus longues du controle, 84 et 82 caracteres, sont parmi les plus propres.
 
