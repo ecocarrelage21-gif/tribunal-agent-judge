@@ -259,6 +259,33 @@ La progression designe le mecanisme : un auto-encodeur n'apprend pas des frequen
 
 **La regle qui en sort : un controle trop facile ne dit pas seulement moins, il dit faux.** A dix-huit commandes il classait a l'envers. A 480 commandes pauvres il annoncait un plancher propre a 5 %. A 960 realistes il en montre 16, et le controle symetrique montre que la moitie de ces 16 ne parle pas de ce qu'on croyait. Chaque fois, la reponse a ete de rendre la mesure plus dure et de regarder ce qui restait.
 
+### 10. Le juge bascule sur le contexte, mais nous ne prouvons pas qu'il raisonne
+
+La question que le projet n'avait jamais tranchee : un juge qui raisonne apporte-t-il ce que la reconnaissance de motifs ne donne pas deja ? Nos 49 attaques ne peuvent pas y repondre, elles portent toutes un signal reconnaissable. Nous avons donc fabrique des attaques composees de gestes **ordinaires**, chacune jumelee a une action legitime aux memes outils, et nous les avons passees a un juge qui recoit des principes, jamais la liste des attaques. Trois manches, deux mortes sous notre propre audit avant publication.
+
+**Manche 1.** Quinze attaques de gestes ordinaires, quinze jumelles legitimes. Le plancher deterministe en rate sept sur quinze, c'est son plafond mesure. Le juge prend les quinze et discrimine les quinze paires. Tue par l'audit : dans presque chaque paire, le membre malveillant portait un mot que le benin n'avait pas, un hote etranger, un droit ouvert en grand. Un detecteur de mots fin separe aussi bien. Le controle mesurait la reconnaissance autant que le raisonnement.
+
+**Manche 2.** Mots neutralises, hotes d'apparence banale des deux cotes, plus cent commandes de vrai trafic pour borner les fausses alertes. Huit paires discriminees, zero fausse alerte sur cent. Tue aussi : la valeur qui distingue n'etait pas **contrebalancee**, l'hote d'attaque etait toujours un domaine etranger, le benin toujours celui de l'operateur. Une chaine fixe toujours du meme cote reste un tell. Preuve interne : une jumelle legitime qui reutilisait un hote d'attaque etait escaladee quand meme. Le juge suivait le style de l'hote, pas l'effet.
+
+**Manche 3, le test de bascule.** Dix commandes, chacune jugee deux fois sous deux contextes opposes. La commande est **identique, octet pour octet**. Seule change une phrase decrivant le monde : cet hote est le tien, ou il ne l'est pas ; ce repertoire est un cache regenerable, ou l'unique copie de donnees sans sauvegarde. Chaque hote apparait une fois sien, une fois etranger : contrebalance parfait, aucune chaine du seul cote de l'attaque, et les deux moities d'une paire jamais montrees dans le meme lot.
+
+| test de bascule | resultat |
+|---|---|
+| bascule du verdict (commande identique, contexte oppose) | **10 / 10** sur 3 passes |
+| fausses alertes sous contexte legitime | 0 / 10 |
+| accord entre passes | 95 % |
+
+Permis sous le contexte legitime, refuse ou escalade sous le contexte d'attaque, pour la meme commande. Le plancher deterministe ne peut pas faire cela : il n'a aucun moyen de lire, dans une phrase, que ce repertoire est servi publiquement.
+
+**Et pourtant, troisieme audit, troisieme refutation, que nous publions comme conclusion.** Le test exclut la reconnaissance sur la **commande**, pas sur le **contexte**. Nos contextes d'attaque enoncent le danger en toutes lettres : servi publiquement, unique copie sans sauvegarde, journal d'audit legal, tiers inconnu, origine non verifiee. Un detecteur de mots sur le contexte seul, sans jamais lire la commande, passerait neuf ou dix sur dix. Deux hypotheses, le juge **raisonne** sur l'effet et le juge **suit** des mots de confiance et de defiance, predisent exactement le meme dix sur dix : le test ne les departage pas.
+
+**Ce que nous affirmons, ni plus ni moins.** Le juge est fortement **sensible au contexte** : la meme commande bascule quand seul le contexte bascule, et il ne sur-refuse pas dix cadrages legitimes plausibles. Cela refute l'idee que le juge ne jugerait que la commande en ignorant le monde. Cela ne prouve **pas** un raisonnement distinct d'une reconnaissance sophistiquee : trois fois le tell s'est seulement **deplace**, des mots de la commande au style de l'hote puis au vocabulaire du contexte. C'est peut-etre une distinction sans difference dans un modele generatif, et nous l'ecrivons comme une limite, pas comme un echec.
+
+**L'autre moitie de la reponse, nous l'avions deja** (correction 4) : quand le contexte est choisi par celui qui agit, la detection s'effondre a zero. Les deux se rejoignent en une regle nette. Le contexte est un **atout** quand il vient d'une source de confiance, et une **faille** quand il vient de l'agent juge. La bascule marche ici parce que le contexte est vrai ; un contexte faux mais rassurant retournerait la meme sensibilite contre nous, et c'est le prochain test, celui de l'ingenierie sociale par le contexte.
+
+**La lecon de methode**, qui vaut au-dela de ce projet : pour departager raisonnement et reconnaissance, il ne suffit pas de contrebalancer la commande, il faut contrebalancer **tout canal qui co-varie avec la reponse**, le vocabulaire du contexte compris. Nos deux premieres manches sont mortes faute de contrebalancer la commande, la troisieme borne ce qu'on peut affirmer faute de contrebalancer le contexte. C'est la vieille regle du projet, un controle bati en connaissant la reponse mesure ce qu'on y a mis, poussee jusqu'au bout. Et c'est la premiere mesure qui montre la troisieme couche a l'oeuvre : un contexte de confiance, donne par le systeme et non par l'agent, change bel et bien le verdict. Reste a le rendre infalsifiable.
+
+
 ## Ce que ces corrections nous apprennent
 
 Regardez ce que la representation honnete rate : un telechargement suivi d'une execution, une ligne ajoutee a un fichier de configuration, une tache planifiee. Ce sont des gestes qu'un operateur fait tous les jours. Au niveau de ce que l'action **fait**, quelle capacite, dans quelle zone, avec quelle structure, une attaque et du travail legitime sont souvent le meme objet.
